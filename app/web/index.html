@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark" data-anim="smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>飞书机器人管家</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="boot" id="boot">
+  <div class="boot-mark"></div>
+  <div class="boot-text">正在连接后端…</div>
+</div>
+<div class="app" id="app">
+
+  <!-- 标题栏 -->
+  <header class="titlebar" id="titlebar">
+    <div class="tb-left">
+      <div class="logo"><span></span></div>
+      <div class="tb-title">飞书机器人管家</div>
+      <div class="tb-badge" id="tbBadge">已停止</div>
+    </div>
+    <div class="tb-right no-drag">
+      <button class="winbtn" data-win="min" title="最小化">
+        <svg viewBox="0 0 12 12"><path d="M2.5 6h7" /></svg>
+      </button>
+      <button class="winbtn" data-win="max" title="最大化">
+        <svg viewBox="0 0 12 12"><rect x="2.6" y="2.6" width="6.8" height="6.8" rx="1.2" /></svg>
+      </button>
+      <button class="winbtn danger" data-win="close" title="收进托盘">
+        <svg viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" /></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- 侧栏 -->
+    <aside class="sidebar">
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-page="overview">
+          <svg viewBox="0 0 16 16"><rect x="2" y="2" width="5.2" height="5.2" rx="1.4"/><rect x="8.8" y="2" width="5.2" height="5.2" rx="1.4"/><rect x="2" y="8.8" width="5.2" height="5.2" rx="1.4"/><rect x="8.8" y="8.8" width="5.2" height="5.2" rx="1.4"/></svg>
+          <span>概览</span>
+        </button>
+        <button class="nav-item" data-page="config">
+          <svg viewBox="0 0 16 16"><path d="M8 2.4v11.2M3.2 5.6h9.6M3.2 10.4h9.6"/></svg>
+          <span>机器人配置</span>
+        </button>
+        <button class="nav-item" data-page="logs">
+          <svg viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h6.5"/></svg>
+          <span>运行日志</span>
+        </button>
+        <button class="nav-item" data-page="plugins">
+          <svg viewBox="0 0 16 16"><path d="M6.2 2.6h3.6v2.6h2.6v3.6h-2.6v2.6H6.2v-2.6H3.6V5.2h2.6z"/></svg>
+          <span>插件</span>
+        </button>
+        <button class="nav-item" data-page="settings">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.9v1.7M8 12.4v1.7M14.1 8h-1.7M3.6 8H1.9M12.3 3.7l-1.2 1.2M4.9 11.1l-1.2 1.2M12.3 12.3l-1.2-1.2M4.9 4.9L3.7 3.7"/></svg>
+          <span>设置</span>
+        </button>
+        <div id="pluginNav"></div>
+      </nav>
+
+      <div class="side-foot">
+        <div class="pulse" id="sideDot"></div>
+        <div>
+          <div class="side-state" id="sideState">已停止</div>
+          <div class="side-meta" id="sideMeta">—</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 内容 -->
+    <main class="content" id="content">
+
+      <!-- 概览 -->
+      <section class="page active" data-page="overview">
+        <div class="hero card">
+          <div class="hero-main">
+            <div class="state-ring" id="stateRing"><div class="ring-core"></div></div>
+            <div class="hero-text">
+              <h1 id="heroTitle">机器人已停止</h1>
+              <p id="heroDesc">点右边的启动按钮，或让我随管家一起启动</p>
+              <div class="hero-meta">
+                <span class="chip" id="chipPid">PID —</span>
+                <span class="chip" id="chipUptime">运行 00:00:00</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn primary" id="btnStart">
+              <svg viewBox="0 0 14 14"><path d="M4.2 2.6l7 4.4-7 4.4z"/></svg> 启动
+            </button>
+            <button class="btn" id="btnStop">
+              <svg viewBox="0 0 14 14"><rect x="3.4" y="3.4" width="7.2" height="7.2" rx="1.4"/></svg> 停止
+            </button>
+            <button class="btn" id="btnRestart">
+              <svg viewBox="0 0 14 14"><path d="M11.4 7a4.4 4.4 0 1 1-1.5-3.3"/><path d="M11.6 2.2v2.6H9"/></svg> 重启
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card mini">
+            <div class="mini-label">机器人目录</div>
+            <div class="mini-value path" id="miniDir">—</div>
+            <button class="link" id="btnRevealDir">打开目录</button>
+          </div>
+          <div class="card mini">
+            <div class="mini-label">Node 运行时</div>
+            <div class="mini-value path" id="miniNode">—</div>
+            <button class="link" id="btnRecheck">重新体检</button>
+          </div>
+          <div class="card mini">
+            <div class="mini-label">启动前检查</div>
+            <div class="mini-value" id="miniCheck">—</div>
+            <button class="link" data-goto="config">去配置</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>最近输出</h2>
+            <button class="link" data-goto="logs">看全部</button>
+          </div>
+          <div class="log-mini" id="logMini"><div class="empty">还没有输出</div></div>
+        </div>
+      </section>
+
+      <!-- 配置 -->
+      <section class="page" data-page="config">
+        <div class="page-head">
+          <div>
+            <h1>机器人配置</h1>
+            <p class="muted" id="envPath">—</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn" id="btnImportCfg" title="从 JSON 导入 .env 与 docs.json">导入</button>
+            <button class="btn" id="btnExportCfg" title="把 .env 与 docs.json 导出成 JSON">导出</button>
+            <button class="btn" id="btnReloadEnv">重新读取</button>
+            <button class="btn primary" id="btnSaveEnv">保存</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>凭证与模型</h2><span class="hint">写入机器人目录下的 .env</span></div>
+          <div class="form-grid" id="envForm"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>文档清单</h2><span class="hint" id="docsPath">机器人能操作哪些飞书文档</span></div>
+          <div class="doc-add">
+            <input id="docUrl" placeholder="粘贴飞书文档链接，如 https://xxx.feishu.cn/docx/xxxx" />
+            <input id="docName" placeholder="名称（可留空）" />
+            <button class="btn primary" id="btnAddDoc">添加</button>
+          </div>
+          <div class="doc-list" id="docList"></div>
+          <details class="fold" style="margin-top:14px">
+            <summary>查看 / 直接编辑 docs.json</summary>
+            <textarea class="code" id="docsEditor" spellcheck="false" rows="10"></textarea>
+            <div class="row-end"><button class="btn" id="btnSaveDocs">保存原文</button></div>
+          </details>
+        </div>
+
+        <details class="card fold">
+          <summary>直接编辑 .env 原文</summary>
+          <textarea class="code" id="envRaw" spellcheck="false" rows="12"></textarea>
+          <div class="row-end"><button class="btn" id="btnSaveEnvRaw">保存原文</button></div>
+        </details>
+      </section>
+
+      <!-- 日志 -->
+      <section class="page" data-page="logs">
+        <div class="page-head">
+          <div>
+            <h1>运行日志</h1>
+            <p class="muted" id="logMeta">—</p>
+          </div>
+          <div class="head-actions">
+            <label class="switch sm"><input type="checkbox" id="chkAutoScroll" checked /><span></span><em>自动滚动</em></label>
+            <button class="btn" id="btnExportLogs">导出</button>
+            <button class="btn danger" id="btnClearLogs">清空</button>
+          </div>
+        </div>
+
+        <div class="card flush">
+          <div class="toolbar">
+            <input class="search" id="logSearch" placeholder="搜索日志…" />
+            <div class="chips" id="logFilter">
+              <button class="chip-btn active" data-level="all">全部</button>
+              <button class="chip-btn" data-level="info">信息</button>
+              <button class="chip-btn" data-level="warn">警告</button>
+              <button class="chip-btn" data-level="error">错误</button>
+            </div>
+          </div>
+          <div class="log-view" id="logView"><div class="empty">等待输出…</div></div>
+        </div>
+      </section>
+
+      <!-- 插件 -->
+      <section class="page" data-page="plugins">
+        <div class="page-head">
+          <div>
+            <h1>插件</h1>
+            <p class="muted">放一个文件夹进来就是一个插件，改完不用重新打包</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn" id="btnOpenPlugins">打开插件目录</button>
+            <button class="btn primary" id="btnReloadPlugins">重新加载</button>
+          </div>
+        </div>
+        <div class="plugin-list" id="pluginList"></div>
+      </section>
+
+      <!-- 设置 -->
+      <section class="page" data-page="settings">
+        <div class="page-head"><div><h1>设置</h1><p class="muted">改动即时保存</p></div></div>
+
+        <div class="card">
+          <div class="card-head"><h2>动画</h2><span class="hint">点一下立即预览</span></div>
+          <div class="anim-grid" id="animGrid"></div>
+        </div>
+
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="row-title">主题</div>
+              <div class="row-desc">深色适合长时间看日志，浅色适合白天</div>
+            </div>
+            <div class="segmented" id="themeSeg">
+              <button data-theme="dark">深色</button>
+              <button data-theme="light">浅色</button>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="row">
+            <div>
+              <div class="row-title">窗口边框</div>
+              <div class="row-desc">无边框更干净；万一标题栏拖不动可以换成系统标题栏</div>
+            </div>
+            <div class="segmented" id="frameSeg">
+              <button data-frameless="1">无边框</button>
+              <button data-frameless="0">系统标题栏</button>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="row">
+            <div>
+              <div class="row-title">关闭窗口时</div>
+              <div class="row-desc">点右上角 × 之后：收进托盘继续跑，还是直接退出（含机器人）</div>
+            </div>
+            <div class="segmented" id="closeSeg">
+              <button data-close="tray">隐藏到托盘</button>
+              <button data-close="quit">退出应用</button>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="row">
+            <div>
+              <div class="row-title">开机自启</div>
+              <div class="row-desc">写入当前用户的启动项，不需要管理员权限</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="chkAutostart" /><span></span></label>
+          </div>
+          <div class="divider"></div>
+          <div class="row">
+            <div>
+              <div class="row-title">随管家启动机器人</div>
+              <div class="row-desc">管家打开后自动把机器人拉起来</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="chkAutoStartBot" /><span></span></label>
+          </div>
+          <div class="divider"></div>
+          <div class="row">
+            <div>
+              <div class="row-title">退出时停止机器人</div>
+              <div class="row-desc">关掉管家后不留下孤儿进程</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="chkStopOnExit" /><span></span></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>运行环境</h2></div>
+          <div class="field-row">
+            <label>机器人目录</label>
+            <div class="input-with-btn">
+              <input id="inpBotDir" placeholder="选择包含 index.js 的目录" />
+              <button class="btn" id="btnPickDir">选择</button>
+              <button class="btn" id="btnUseBundled" title="用安装目录里自带的那份机器人">用自带的</button>
+            </div>
+          </div>
+          <div class="field-row">
+            <label>Node 路径</label>
+            <input id="inpNode" placeholder="node 或 C:\Program Files\nodejs\node.exe" />
+          </div>
+          <div class="row-end"><button class="btn primary" id="btnSavePaths">保存</button></div>
+        </div>
+
+        <div class="card about">
+          <div class="about-logo"></div>
+          <div style="flex:1">
+            <div class="row-title" id="aboutName">飞书机器人管家</div>
+            <div class="row-desc" id="aboutVer">v1.0.0</div>
+          </div>
+          <button class="btn danger" id="btnQuit">退出管家</button>
+        </div>
+      </section>
+
+      <!-- 插件页容器 -->
+      <div id="pluginPages"></div>
+    </main>
+  </div>
+</div>
+
+<!-- 无边框窗口的 8 个缩放热区：贴边拖拽 = 改大小 -->
+<div class="resize-layer" id="resizeLayer" aria-hidden="true">
+  <div class="rs rs-n" data-resize="top"></div>
+  <div class="rs rs-s" data-resize="bottom"></div>
+  <div class="rs rs-w" data-resize="left"></div>
+  <div class="rs rs-e" data-resize="right"></div>
+  <div class="rs rs-nw" data-resize="topleft"></div>
+  <div class="rs rs-ne" data-resize="topright"></div>
+  <div class="rs rs-sw" data-resize="bottomleft"></div>
+  <div class="rs rs-se" data-resize="bottomright"></div>
+</div>
+
+<!-- 拖入插件：只在有文件拖进窗口时出现，松手即安装 -->
+<div class="drop-overlay" id="dropOverlay" aria-hidden="true">
+  <div class="drop-box">
+    <svg class="drop-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M32 9v25" />
+      <path d="M20 24l12 12 12-12" />
+      <path d="M11 43v6a5 5 0 0 0 5 5h32a5 5 0 0 0 5-5v-6" />
+    </svg>
+    <div class="drop-title">松手就装</div>
+    <div class="drop-sub">插件文件夹，或者 .zip 压缩包</div>
+  </div>
+</div>
+
+  <!-- 飞书应用配置说明 -->
+  <div class="modal-mask" id="helpModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <header class="modal-head">
+        <h3 id="helpTitle">飞书应用怎么配</h3>
+        <button class="modal-x" id="helpClose" type="button" title="关闭">✕</button>
+      </header>
+      <ol class="modal-steps">
+        <li><b>建应用</b>：<a href="https://open.feishu.cn/app" data-ext="1">飞书开放平台</a> → 创建企业自建应用，名字随便起，图标可后补。</li>
+        <li><b>取凭证</b>：「凭证与基础信息」页复制 <code>App ID</code> 与 <code>App Secret</code>，填到本页上面两栏。</li>
+        <li><b>开机器人</b>：「添加应用能力」里勾选「机器人」。</li>
+        <li><b>配权限</b>：「权限管理」里搜索「消息」，开通「获取与发送单聊、群组消息」与「接收群聊中 @ 机器人消息」。</li>
+        <li><b>收事件</b>：「事件与回调」订阅方式选「长连接」，再添加事件「接收消息 <code>im.message.receive_v1</code>」。</li>
+        <li><b>发布</b>：「版本管理与发布」创建版本并申请发布，管理员通过后，把机器人拉进群 @ 它提问。</li>
+      </ol>
+      <p class="modal-note">本页其余字段（模型、接口地址、API Key、人设提示词）只决定它怎么回答，不用去飞书后台；改完点右上角「保存」写回机器人目录的 <code>.env</code>。</p>
+      <footer class="modal-foot">
+        <button class="btn" id="helpDocs" type="button">官方文档</button>
+        <button class="btn primary" id="helpOk" type="button">知道了</button>
+      </footer>
+    </div>
+  </div>
+
+<div class="toasts" id="toasts"></div>
+<script src="js/animations.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

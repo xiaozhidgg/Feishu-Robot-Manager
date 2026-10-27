@@ -1,0 +1,7 @@
+# 运行依赖
+pywebview>=6.0
+pystray>=0.19.5
+Pillow>=10.0
+
+# 打包依赖（只在 build.py 里用到）
+pyinstaller>=6.0

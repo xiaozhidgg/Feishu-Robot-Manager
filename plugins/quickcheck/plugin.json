@@ -1,0 +1,10 @@
+{
+  "id": "quickcheck",
+  "name": "环境体检",
+  "version": "1.0.0",
+  "description": "演示插件：前端加一个标签页，后端跑一段 Python，把 Node / 目录 / 系统信息返回来。",
+  "author": "example",
+  "tab": { "title": "环境体检" },
+  "ui": "plugin.js",
+  "backend": "backend.py"
+}

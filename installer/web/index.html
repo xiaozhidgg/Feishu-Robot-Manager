@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>飞书机器人管家 安装向导</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <div class="brand">
+      <div class="mark"></div>
+      <div>
+        <div class="brand-name">飞书机器人管家</div>
+        <div class="brand-sub" id="stepName">安装向导</div>
+      </div>
+    </div>
+    <div class="ver" id="verText">v1.0.0</div>
+  </header>
+
+  <main class="body">
+
+    <!-- 步骤 1：欢迎 -->
+    <section class="step active" data-step="welcome">
+      <div class="hero">
+        <div class="hero-mark"></div>
+        <h1>欢迎使用飞书机器人管家</h1>
+        <p class="lead">一个轻量的桌面工具，用来启动、停止、配置和查看飞书 DeepSeek 机器人的运行状态。</p>
+      </div>
+      <ul class="bullets">
+        <li><span>·</span> 安装到当前用户目录，<b>不需要管理员权限</b></li>
+        <li><span>·</span> 约 <b id="needMB">16</b> MB 磁盘空间，可随时从「应用和功能」卸载</li>
+        <li><span>·</span> 安装包<b>不包含任何配置和密钥</b>，首次打开后自己填</li>
+      </ul>
+    </section>
+
+    <!-- 步骤 2：选择位置 -->
+    <section class="step" data-step="location">
+      <h1>选择安装位置</h1>
+      <p class="lead">装到哪个文件夹？建议用默认路径，省得以后找不到。</p>
+
+      <div class="path-row">
+        <input id="pathInput" spellcheck="false" />
+        <button class="btn" id="btnBrowse">浏览…</button>
+      </div>
+      <div class="hint" id="pathHint"></div>
+
+      <div class="opts">
+        <label class="check"><input type="checkbox" id="optDesktop" checked /><span></span>创建桌面快捷方式</label>
+        <label class="check"><input type="checkbox" id="optStartMenu" checked /><span></span>添加到开始菜单（含卸载入口）</label>
+      </div>
+
+      <div class="summary">
+        <div><span>安装内容</span><b>主程序 · 示例插件 · 说明文档</b></div>
+        <div><span>占用空间</span><b id="sumSize">约 16 MB</b></div>
+        <div><span>卸载方式</span><b>开始菜单「卸载 飞书机器人管家」，或「设置 → 应用」</b></div>
+      </div>
+    </section>
+
+    <!-- 步骤 3：安装中 -->
+    <section class="step" data-step="progress">
+      <h1>正在安装</h1>
+      <p class="lead" id="progressText">准备中…</p>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="pct" id="pctText">0%</div>
+      <div class="log" id="logList"></div>
+    </section>
+
+    <!-- 步骤 4：完成 -->
+    <section class="step" data-step="done">
+      <div class="done-ok" id="doneOk">
+        <div class="tick">✓</div>
+        <h1>安装完成</h1>
+        <p class="lead">已经装好，可以开始用了。</p>
+        <div class="installed-path" id="installedPath"></div>
+        <label class="check" style="margin-top:16px"><input type="checkbox" id="optRun" checked /><span></span>立即打开飞书机器人管家</label>
+      </div>
+      <div class="done-err" id="doneErr">
+        <div class="cross">!</div>
+        <h1>安装失败</h1>
+        <p class="lead" id="errText"></p>
+        <p class="lead dim">常见原因：目标目录被占用（管家还在运行）、没有写入权限、路径里有非法字符。</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <div class="foot-hint" id="footHint">准备就绪</div>
+    <div class="foot-btns">
+      <button class="btn ghost" id="btnCancel">取消</button>
+      <button class="btn" id="btnBack">上一步</button>
+      <button class="btn primary" id="btnNext">下一步</button>
+    </div>
+  </footer>
+
+</div>
+<script src="wizard.js"></script>
+</body>
+</html>

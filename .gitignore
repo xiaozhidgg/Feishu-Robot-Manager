@@ -1,0 +1,36 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- PyInstaller 产物 ----
+build/
+dist/
+*.spec
+
+# ---- 运行期文件（每台机器都不一样）----
+logs/
+.webview/
+manager.config.json
+crash.log
+*.log
+
+# ---- 构建产物（用 build.py 重新生成，不进仓库）----
+FeishuBotManager.exe
+飞书机器人管家-安装包.exe
+卸载.exe
+
+# ---- 凭据 ----
+.env
+.env.*
+*.pem
+*.key
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
