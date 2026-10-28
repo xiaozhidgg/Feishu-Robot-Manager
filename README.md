@@ -1,6 +1,6 @@
 # 飞书机器人管家 · 开发者文档
 
-> 版本 **1.0.0** ｜ 平台 **Windows 10/11** ｜ 运行时 **Python 3.11+ · WebView2**
+> 版本 **1.0.1** ｜ 平台 **Windows 10/11** ｜ 运行时 **Python 3.11+ · WebView2**
 >
 > 本文档面向二次开发与维护者。只想把机器人跑起来的终端用户，读「[快速开始](#2-快速开始)」一节即可。
 
@@ -10,7 +10,7 @@
 
 | 能力 | 实现方式 |
 |---|---|
-| 单文件分发 | PyInstaller `--onefile`，界面资源打进包内，约 15 MB（安装包约 27 MB） |
+| 单文件分发 | PyInstaller `--onefile`，界面资源打进包内，约 15 MB（安装包约 31 MB） |
 | 现代化界面 | pywebview + Edge WebView2，无边框窗口，纯 DOM 无前端框架 |
 | 机器人托管 | `subprocess` 拉起 `node index.js`，stdout/stderr 实时汇入日志 |
 | 配置编辑 | 图形化编辑机器人 `.env`（保留注释）与 `docs.json`（带链接解析） |
@@ -114,6 +114,20 @@ user32.SendMessageW(hwnd, 0xA1, 0x2, 0)   # WM_NCLBUTTONDOWN / HTCAPTION
 **四周缩放**：无边框窗口没有系统边框，界面上叠了一层 8 个透明热区（`#resizeLayer` 里的 `[data-resize]`，边 4–5px、角 12px）。鼠标按下时前端把方向（`left` / `right` / `top` / `bottom` / `topleft` / `topright` / `bottomleft` / `bottomright`）交给 `win_resize(edge)`，后端换算成 Win32 命中测试码（`HTLEFT`=10 … `HTBOTTOMRIGHT`=17）后，同样走 `ReleaseCapture` + `WM_NCLBUTTONDOWN`，由系统接管整段缩放过程，所以拖动是跟手的、不经过 Python 循环。
 
 最大化状态下拖边或拖角，会先自动还原成普通窗口再开始缩放；拖动结束后大小会写入 `manager.config.json` 的 `window.width/height`，下次启动沿用（最大化尺寸不记录）。
+
+### 3.4 问答日志（可折叠）
+
+机器人被管家拉起时，`BotProcess.start()` 会注入 `FBM_MANAGED=1`；机器人据此把「谁问了什么 / 正在思考 / 最终回复」以 `\x1eFBM {json}` 的形式打到 stdout（`MSG_PREFIX`，见 `app/core/process.py`）。读线程识别前缀后**不再当普通输出**，而是转成一条带 `kind` 的日志：
+
+| kind | 界面显示 | 明细 |
+| --- | --- | --- |
+| `ask` | `🙋 提问：<前 60 字>` | 完整提问 |
+| `think` | `🤔 思考中（deepseek-flash）` | 无 |
+| `reply` | `💬 回复（N 字）` | 完整回复 |
+
+带明细的行默认**折起**，点一下展开全文（`<details class="log-fold">`，摘要行右侧有「展开 / 收起」小胶囊）。关键取舍：**明细只留在内存里**（`LogStore.add(..., detail=...)`），`logs\manager-YYYY-MM-DD.log` 只写摘要行 —— 群聊正文不该落进保留 14 天的日志文件。界面最多保留 2600 行，翻查用「导出」。
+
+> 注意：`\x1e` 在 Python 眼里也算空白，识别前缀时不能用 `lstrip()`，只剥空格和制表符（见 `_emit_message` 里的注释）。
 
 ---
 
@@ -622,6 +636,8 @@ plugin.js: ctx.pluginCall("hello", {...})
 | `logs\manager-YYYY-MM-DD.log` | exe 同级 | 按天追加，超 `log.keepDays`（默认 14 天）自动清理 |
 | `logs-export-<时间戳>.txt` | exe 同级 | `export_logs()` 生成 |
 | `plugins\` | exe 同级 | 插件目录（开发态即源码目录） |
+| `bot\` | 安装目录（安装版） | 安装包内置的机器人副本；只有 `bot.dir` 指向它时才会被拉起 |
+| `卸载.bat` | 安装目录（安装版） | 卸载入口，等价于 `FeishuBotManager.exe --uninstall` |
 | `.webview\` | exe 同级 | WebView2 缓存，可随时删除 |
 | `crash.log` | exe 同级 | 主流程未捕获异常时生成 |
 | `.env` | **机器人目录** | 机器人凭证与模型配置，管家代为编辑 |
@@ -747,7 +763,7 @@ plugin.js: ctx.pluginCall("hello", {...})
 1. **准备负载** `build\payload\` —— 四样：`FeishuBotManager.exe`、`README.md`、`plugins\`（剔除 `__pycache__` / `*.pyc` / `*.log`），以及 `bot\`（从同级 `feishu-deepseek-bot` 复制，剔除 `.env` / `docs.json` / `*.log` / `.git`；找不到源目录时跳过并在输出里提示）。**不再打独立卸载器**：卸载逻辑已收进主程序的 `--uninstall`，省掉 8.4 MB 的第二个 Python 运行时。
 2. **打安装包** —— `installer/main.py` + `payload` + `installer/web` → `飞书机器人管家-安装包.exe`，并复制到**上级目录**（即 `飞书机器人\` 交付目录）。
 
-体积参考（本机实测）：主程序 **15.0 MB**、安装包 **27.4 MB**。主程序能压到 15 MB，是因为 `build.py` 排除了两个用不到的 Pillow 模块（`PIL._avif` 4.1 MB、`PIL._imagingft` 1.0 MB）；**`ssl` 不能排** —— pywebview 在 `webview/__init__.py` 顶层 `import ssl`，排掉会启动即 `ModuleNotFoundError`。
+体积参考（本机实测）：主程序 **15.0 MB**、安装包 **31.3 MB**。主程序能压到 15 MB，是因为 `build.py` 排除了两个用不到的 Pillow 模块（`PIL._avif` 4.1 MB、`PIL._imagingft` 1.0 MB）；**`ssl` 不能排** —— pywebview 在 `webview/__init__.py` 顶层 `import ssl`，排掉会启动即 `ModuleNotFoundError`。
 
 **明确不进包**：`manager.config.json`、`logs\`、`.webview\`、机器人的 `.env` / `docs.json`。`stage_payload()` 是这条规则的唯一开关，改打包内容只改它。
 
@@ -775,7 +791,7 @@ plugin.js: ctx.pluginCall("hello", {...})
 | 值 | 内容 |
 |---|---|
 | `DisplayName` | 飞书机器人管家 |
-| `DisplayVersion` | 1.0.0 |
+| `DisplayVersion` | 1.0.1 |
 | `Publisher` | 九叶化妆品 |
 | `InstallLocation` | 安装目录 |
 | `DisplayIcon` | `<安装目录>\FeishuBotManager.exe,0` |
@@ -827,16 +843,6 @@ FeishuBotManager.exe --uninstall --yes  # 静默，注册表 QuietUninstallStrin
 
 > 清理按两套名字兜底：安装器用中文名「飞书机器人管家」建快捷方式，而主程序内部 `APP_NAME` 是 `"FeishuBotManager"`，因此 `_remove_shortcuts()` 会同时扫描中英文名（含 `卸载 ` 前缀），避免改名后留下孤儿快捷方式。
 
-### 9.5 发布检查清单
-
-- [ ] `app/core/config.py:11` 与 `installer/core.py:18` 的 `APP_VERSION` **两处同步**（另有 `installer/core.py` 的 `APP_NAME`、`PUBLISHER`）
-- [ ] `python tests\smoke.py` 全绿
-- [ ] 关掉运行中的管家后再打包
-- [ ] 确认 `build\payload\` 里没有 `manager.config.json`、`logs\`、`.env`
-- [ ] 主程序约 15 MB、安装包约 27 MB；体积明显变大时先查 `build.py` 的 `--exclude-module` 是否被误删
-- [ ] 安装目录里应有 `卸载.bat`，不应再出现 `卸载.exe`（旧包升级时安装器会自动清掉）
-- [ ] 在同一台机器上跑一遍「安装 → 启动 → 启停机器人 → 卸载」，确认目录、注册表、桌面与开始菜单快捷方式都被清掉
-
 ---
 
 ## 10. 测试与自检
@@ -872,7 +878,7 @@ FeishuBotManager.exe --uninstall --yes  # 静默，注册表 QuietUninstallStrin
 | 「启动」被拦下，体检报目录不存在 | `bot.dir` 未配置或被移动 | 设置 → 运行环境 重新选目录 |
 | 体检报「找不到 Node」 | `bot.node` 不在 PATH | 填 node 绝对路径，或装 Node 后重启管家 |
 | 机器人起来后很快退出 | 机器人目录缺 `.env` 或凭证失效 | 体检里是 `warn`，按提示补凭证；日志页看退出码与 stderr |
-| 关窗后进程还在 | 设计如此（收托盘） | 托盘菜单「退出」或设置页「退出管家」 |
+| 关窗后进程还在 | `window.closeAction` 默认为 `tray`（收托盘） | 设置 → 关闭窗口时 改成「退出应用」，或用托盘菜单退出 |
 | 界面白屏 | WebView2 运行时缺失，或 `web\index.html` 没打进去 | 安装 Edge WebView2 Runtime；检查 `--add-data` |
 | 插件不出现 | `plugin.json` 解析失败（`plugin_list()` 的 `error` 有值）/ 未启用 / 没写 `tab` | 修 JSON、插件页启用 |
 | 插件改完没生效 | 后端模块有缓存 | 插件页点「重新加载」 |

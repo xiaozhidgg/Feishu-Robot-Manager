@@ -15,7 +15,7 @@ from typing import Callable, Optional
 
 APP_NAME = "飞书机器人管家"
 APP_ID = "FeishuBotManager"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.0.1"
 PUBLISHER = "九叶化妆品"
 CREATE_NO_WINDOW = 0x08000000
 

@@ -8,7 +8,7 @@ const state = { step: "welcome", path: "", info: {}, timer: null, lastText: "" }
 const MOCK = {
   info: () => ({
     name: "飞书机器人管家",
-    version: "1.0.0",
+    version: "1.0.1",
     defaultDir: "C:\\Users\\you\\AppData\\Local\\Programs\\FeishuBotManager",
     needMB: 16,
     freeMB: 128_000,
@@ -247,7 +247,7 @@ async function boot() {
   try {
     const info = await bridge.call("info");
     state.info = info || {};
-    $("#verText").textContent = `v${info.version || "1.0.0"}`;
+    $("#verText").textContent = `v${info.version || "1.0.1"}`;
     $("#needMB").textContent = info.needMB || "16";
     $("#pathInput").value = info.defaultDir || "";
     state.path = info.defaultDir || "";

@@ -24,7 +24,7 @@ const state = {
 /* ---------------------------------------------------------- 桥 */
 const MOCK = {
   bootstrap: () => ({
-    app: { name: "飞书机器人管家", version: "1.0.0", frozen: false },
+    app: { name: "飞书机器人管家", version: "1.0.1", frozen: false },
     config: { bot: { dir: "…\\feishu-deepseek-bot", node: "node", autoStart: false, stopOnExit: true }, ui: { animation: "smooth", theme: "dark", accent: "#0a8f47" }, window: { frameless: true } },
     status: { running: true, pid: 12088, uptime: 3725, botDir: "…\\feishu-deepseek-bot", node: "node" },
     preflight: { ok: true, issues: [{ level: "warn", text: "没有 .env，机器人启动后会因为缺凭证报错" }] },
@@ -200,10 +200,27 @@ function renderStatus() {
 }
 
 /* ---------------------------------------------------------- 渲染：日志 */
-function logLine(item) {
-  return `<div class="log-line ${item.level}" data-level="${item.level}">
-    <span class="log-time">${esc(item.time)}</span>
-    <span class="log-src ${esc(item.source)}">${esc(item.source === "bot" ? "BOT" : item.source === "plugin" ? "PLG" : "MGR")}</span>
+const LOG_SRC = { bot: "BOT", plugin: "PLG", manager: "MGR" };
+
+function logLine(item, opts = {}) {
+  const src = esc(LOG_SRC[item.source] || item.source);
+  const kindCls = item.kind ? ` kind-${esc(item.kind)}` : "";
+  const head = `<span class="log-time">${esc(item.time)}</span>
+    <span class="log-src ${esc(item.source)}">${src}</span>`;
+
+  // 带明细的问答日志（提问 / 回复）：一行摘要 + 可展开的全文
+  if (item.detail && opts.fold !== false) {
+    return `<div class="log-line ${item.level}${kindCls}" data-level="${item.level}">
+      ${head}
+      <details class="log-fold">
+        <summary><span class="log-text">${esc(item.text)}</span><span class="log-exp"></span></summary>
+        <pre class="log-body">${esc(item.detail)}</pre>
+      </details>
+    </div>`;
+  }
+
+  return `<div class="log-line ${item.level}${kindCls}" data-level="${item.level}">
+    ${head}
     <span class="log-text">${esc(item.text)}</span>
   </div>`;
 }

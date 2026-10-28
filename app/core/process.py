@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -16,6 +17,9 @@ from typing import Any, Dict, Optional
 from .logs import LogStore
 
 CREATE_NO_WINDOW = 0x08000000
+
+# 机器人往 stdout 打的「结构化消息」前缀；界面据此渲染成可折叠的问答日志
+MSG_PREFIX = "\x1eFBM "
 
 
 class BotProcess:
@@ -111,6 +115,7 @@ class BotProcess:
             env = os.environ.copy()
             env.setdefault("PYTHONIOENCODING", "utf-8")
             env["FORCE_COLOR"] = "0"
+            env["FBM_MANAGED"] = "1"  # 让机器人知道输出被管家接走了，可以打结构化消息
 
             try:
                 self._proc = subprocess.Popen(
@@ -145,6 +150,8 @@ class BotProcess:
         try:
             assert proc.stdout is not None
             for line in proc.stdout:
+                if self._emit_message(line):
+                    continue
                 self.logs.add(line, "bot")
         except Exception as exc:
             self.logs.add(f"读取输出出错：{exc}", "manager", "warn")
@@ -161,6 +168,38 @@ class BotProcess:
                 level = "info" if code == 0 else "error"
                 self.logs.add(f"机器人进程结束（退出码 {code}）", "manager", level)
             self._notify()
+
+    def _emit_message(self, line: str) -> bool:
+        """识别机器人打的 `\x1eFBM {json}` 结构化消息，转成一条问答日志。
+
+        返回 True 表示这行已经被消费，不再当普通输出处理。
+        """
+        # 注意：不能用 lstrip() ——  在 Python 眼里也算空白，会把前缀吃掉
+        raw = (line or "").lstrip(" 	")
+        if not raw.startswith(MSG_PREFIX):
+            return False
+        try:
+            payload = json.loads(raw[len(MSG_PREFIX):])
+        except (ValueError, TypeError):
+            return False
+        if not isinstance(payload, dict):
+            return False
+
+        kind = payload.get("kind")
+        text = str(payload.get("text") or "")
+        compact = " ".join(text.split())
+
+        if kind == "ask":
+            head = compact[:60] + ("…" if len(compact) > 60 else "")
+            self.logs.add(f"🙋 提问：{head}", "bot", "info", kind="ask", detail=text)
+        elif kind == "think":
+            model = payload.get("model") or ""
+            self.logs.add(f"🤔 思考中{('（' + model + '）') if model else ''}", "bot", "info", kind="think")
+        elif kind == "reply":
+            self.logs.add(f"💬 回复（{len(text)} 字）", "bot", "info", kind="reply", detail=text)
+        else:
+            return False
+        return True
 
     def stop(self, timeout: float = 6.0) -> Dict[str, Any]:
         with self._lock:

@@ -671,3 +671,28 @@ html[data-anim="none"] .toast { animation: none; }
 .notice-actions { display: flex; gap: 8px; flex: 0 0 auto; }
 
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- 问答日志：可折叠的提问 / 回复 ---------- */
+.log-line.kind-think .log-text { color: var(--dim); }
+.log-fold { flex: 1; min-width: 0; }
+.log-fold summary {
+  display: flex; align-items: baseline; gap: 8px;
+  cursor: pointer; list-style: none; min-width: 0;
+}
+.log-fold summary::-webkit-details-marker { display: none; }
+.log-fold summary .log-text { flex: 1; min-width: 0; }
+.log-exp {
+  flex: none; font-size: 10px; letter-spacing: .4px;
+  color: var(--dim); border: 1px solid var(--border);
+  padding: 0 6px; border-radius: 999px; line-height: 16px;
+}
+.log-exp::after { content: "展开"; }
+.log-fold[open] .log-exp::after { content: "收起"; }
+.log-fold[open] .log-exp { color: var(--accent); border-color: rgba(10, 143, 71, .35); }
+.log-body {
+  margin: 6px 0 2px; padding: 9px 11px;
+  background: #0d1114; border: 1px solid var(--border); border-radius: 8px;
+  font: 12px/1.75 var(--mono, ui-monospace, Consolas, monospace);
+  color: var(--text); white-space: pre-wrap; word-break: break-word;
+  max-height: 340px; overflow: auto;
+}

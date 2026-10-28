@@ -45,7 +45,19 @@ class LogStore:
         self._fh_day = ""
 
     # ------------------------------------------------------------------ 写入
-    def add(self, text: str, source: str = "manager", level: str | None = None) -> Dict:
+    def add(
+        self,
+        text: str,
+        source: str = "manager",
+        level: str | None = None,
+        kind: str | None = None,
+        detail: str | None = None,
+    ) -> Dict:
+        """写一条日志。
+
+        text 是界面那一行、也是落盘的摘要；detail 只留在内存里给折叠块用，
+        不写文件 —— 群消息正文不该进保留 14 天的日志文件。
+        """
         line = (text or "").rstrip("\r\n")
         if not line.strip():
             return {}
@@ -59,6 +71,10 @@ class LogStore:
                 "source": source,
                 "text": line,
             }
+            if kind:
+                item["kind"] = kind
+            if detail:
+                item["detail"] = detail[:8000]
             self._items.append(item)
             # 落盘也放在锁里：机器人输出线程和界面线程会同时进来，
             # 共用同一个文件句柄，乱序或半行都可能发生。
