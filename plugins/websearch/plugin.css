@@ -1,0 +1,17 @@
+/* 联网搜索插件：只补两个原生控件在深色主题下的样式，不覆盖全局 */
+select.input {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #0e1216 url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2392a1a8' d='M0 0h10L5 6z'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 28px 8px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+select.input option { background: #0e1216; color: var(--text); }
+select.input:focus { outline: none; border-color: var(--accent); }
+
+.ws-actions { display: flex; gap: 8px; margin-top: 14px; }
+.ws-state { margin-top: 12px; }

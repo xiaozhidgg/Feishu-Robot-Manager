@@ -1,0 +1,13 @@
+{
+  "id": "websearch",
+  "name": "联网搜索",
+  "version": "1.0.0",
+  "description": "给机器人开联网搜索：走 DeepSeek 官方 Search / Fetch API，复用机器人 .env 里的 Key。开关、结果条数、一键测试都在这里。",
+  "author": "FeishuBotManager",
+  "tab": {
+    "title": "联网搜索"
+  },
+  "ui": "plugin.js",
+  "backend": "backend.py",
+  "css": "plugin.css"
+}

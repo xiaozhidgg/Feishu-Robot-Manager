@@ -592,6 +592,23 @@ plugin.js: ctx.pluginCall("hello", {...})
 
 > WebView2 出于安全不给页面真实磁盘路径，所以实现是「把内容传上来再落盘」而不是「把路径交给后端复制」；超大目录会在读取阶段被拦下。
 
+### 7.8 内置插件：联网搜索
+
+`plugins/websearch/` 给机器人开联网搜索。搜索与网页抓取由 **DeepSeek 官方接口**完成，复用机器人 `.env` 里已有的 `DEEPSEEK_API_KEY`，不需要再注册搜索服务。
+
+| 组成 | 位置 | 作用 |
+| --- | --- | --- |
+| 插件页 | `plugins/websearch/plugin.js` | 开关、结果条数、保存、保存并重启机器人、测试台 |
+| 插件后端 | `plugins/websearch/backend.py` | 读写 `.env` 的 `WEB_SEARCH` / `WEB_SEARCH_MAX_RESULTS`，并代调一次搜索做自检 |
+| 机器人工具 | `<机器人目录>/search.js` | 暴露 `web_search` / `fetch_url` 两个工具，由 `index.js` 注册进工具列表 |
+
+- 机器人侧开关：`.env` 里 `WEB_SEARCH=on`（或 `1`/`true`/`yes`）且 `DEEPSEEK_API_KEY` 非空才生效；`WEB_SEARCH_MAX_RESULTS` 控制每次条数（默认 5，界面里 1/3/5 三档）。
+- 模型只为「需要实时信息」的问题调用这两个工具，结论里带 `[标题](链接)`；抓回的网页正文会被截断到 6000 字再喂给模型。
+- 接口：`POST https://api.deepseek.com/v1/tools/search`（`query`、`count`、`need_content`）与 `POST /v1/tools/fetch`（`url`），`Authorization: Bearer <DEEPSEEK_API_KEY>`。
+- 缓存：同一 query 10 分钟内复用结果，最多存 200 条；失败会返回中文原因（超时 / HTTP 状态码）。
+- 改完 `.env` 必须**重启机器人**才生效（插件页有「保存并重启机器人」按钮）。
+- 机器人代码（`index.js` / `search.js`）在安装包里是一份快照：改完要回源项目改，再重打安装包；安装器遇到已存在的 `bot\` 会跳过，避免覆盖你改过的代码与 `.env`。
+
 ---
 
 ## 8. 运行时文件与配置格式
