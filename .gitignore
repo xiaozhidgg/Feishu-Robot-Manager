@@ -34,3 +34,10 @@ FeishuBotManager.exe
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# ---- bot/ 副本（机器人源码的快照目录）----
+bot/node_modules/
+bot/.env
+bot/docs.json
+bot/logs/
+bot/.cache/

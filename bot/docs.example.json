@@ -1,0 +1,30 @@
+{
+  "docs": [
+    {
+      "name": "产品手册",
+      "type": "docx",
+      "url": "https://xxx.feishu.cn/docx/PASTE_YOUR_DOC_TOKEN",
+      "writable": true,
+      "note": "对外产品介绍、卖点、规格"
+    },
+    {
+      "name": "会议纪要",
+      "type": "docx",
+      "url": "https://xxx.feishu.cn/docx/PASTE_ANOTHER_TOKEN",
+      "writable": true
+    },
+    {
+      "name": "规章制度",
+      "type": "docx",
+      "url": "https://xxx.feishu.cn/docx/READONLY_TOKEN",
+      "writable": false
+    }
+  ],
+  "folders": [
+    {
+      "name": "默认新建位置",
+      "token": "PASTE_FOLDER_TOKEN",
+      "note": "createDoc 新建的文档放这里；留空则建在应用自己的空间"
+    }
+  ]
+}

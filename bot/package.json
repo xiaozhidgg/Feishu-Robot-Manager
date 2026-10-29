@@ -1,0 +1,18 @@
+{
+  "name": "feishu-deepseek-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "飞书群聊 DeepSeek 机器人（长连接模式，无需公网 IP）",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@larksuiteoapi/node-sdk": "^1.24.0",
+    "dotenv": "^16.4.5"
+  }
+}
