@@ -24,7 +24,7 @@ const state = {
 /* ---------------------------------------------------------- 桥 */
 const MOCK = {
   bootstrap: () => ({
-    app: { name: "飞书机器人管家", version: "1.0.1", frozen: false },
+    app: { name: "飞书机器人管家", version: "1.0.2", frozen: false },
     config: { bot: { dir: "…\\feishu-deepseek-bot", node: "node", autoStart: false, stopOnExit: true }, ui: { animation: "smooth", theme: "dark", accent: "#0a8f47" }, window: { frameless: true } },
     status: { running: true, pid: 12088, uptime: 3725, botDir: "…\\feishu-deepseek-bot", node: "node" },
     preflight: { ok: true, issues: [{ level: "warn", text: "没有 .env，机器人启动后会因为缺凭证报错" }] },

@@ -1,6 +1,6 @@
 # 飞书机器人管家 · 开发者文档
 
-> 版本 **1.0.1** ｜ 平台 **Windows 10/11** ｜ 运行时 **Python 3.11+ · WebView2**
+> 版本 **1.0.2** ｜ 平台 **Windows 10/11** ｜ 运行时 **Python 3.11+ · WebView2**
 >
 > 本文档面向二次开发与维护者。只想把机器人跑起来的终端用户，读「[快速开始](#2-快速开始)」一节即可。
 
@@ -791,7 +791,7 @@ plugin.js: ctx.pluginCall("hello", {...})
 | 值 | 内容 |
 |---|---|
 | `DisplayName` | 飞书机器人管家 |
-| `DisplayVersion` | 1.0.1 |
+| `DisplayVersion` | 1.0.2 |
 | `Publisher` | 九叶化妆品 |
 | `InstallLocation` | 安装目录 |
 | `DisplayIcon` | `<安装目录>\FeishuBotManager.exe,0` |

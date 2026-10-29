@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 APP_NAME = "FeishuBotManager"
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 
 
 def is_frozen() -> bool:
