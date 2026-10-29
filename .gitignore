@@ -41,3 +41,4 @@ bot/.env
 bot/docs.json
 bot/logs/
 bot/.cache/
+!bot/.env.example
