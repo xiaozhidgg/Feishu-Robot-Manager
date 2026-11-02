@@ -99,6 +99,74 @@ npm start
 
 ---
 
+## 三之二、放到 NAS / Docker 里跑（绿联 DXP4800 Plus 之类）
+
+机器人是**长连接**模式：只要容器能出站访问飞书和 DeepSeek，**不需要公网 IP、不需要端口映射**，放在家里的 NAS 上 7×24 跑最合适。
+
+> 注意：管家（`FeishuBotManager.exe`）是 Windows 桌面程序，依赖 WebView2 / 托盘 / 注册表 / `taskkill`，**不能跑在 NAS 上**。NAS 上只需要跑机器人本体；启停交给 Docker 的重启策略，日志用 `docker compose logs`。
+
+### 1. 准备文件
+
+在 NAS 上建一个目录（绿联 UGOS 的 Docker 默认卷在 `/volume1/docker/`），把 `bot/` 里的这几样放进去：
+
+```
+feishu-bot/
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── package.json / package-lock.json / index.js / docs.js / search.js / tablecard.js
+├── .env            ← 你自己的凭证（不进镜像）
+└── docs.json       ← 云文档白名单（可先 cp docs.example.json docs.json）
+```
+
+### 2. 起容器
+
+```bash
+cd /volume1/docker/feishu-bot
+docker compose up -d --build
+docker compose logs -f bot        # 等到 ws client ready 就通了
+```
+
+### 3. 日常操作
+
+| 场景 | 命令 |
+|---|---|
+| 看日志 | `docker compose logs -f --tail=200 bot` |
+| 改完 `.env` 生效 | `docker compose up -d`（`env_file` 变化要重建容器，`restart` 不够） |
+| 改了代码（`index.js` 等） | `docker compose up -d --build` |
+| 停 / 起 | `docker compose stop` / `docker compose start` |
+| 开机自启 | 已经由 `restart: unless-stopped` 负责（NAS 重启后自动拉起） |
+
+### 4. 国内拉基础镜像慢
+
+`node:22-alpine` 从 Docker Hub 拉可能很慢，可以先从镜像站拉再改名：
+
+```bash
+docker pull docker.m.daocloud.io/library/node:22-alpine
+docker tag docker.m.daocloud.io/library/node:22-alpine node:22-alpine
+```
+
+### 5. 不想在 NAS 上构建（可选）
+
+在 Windows 上构建好再搬过去：
+
+```powershell
+docker build -t feishu-deepseek-bot:1.0 .
+docker save -o feishu-bot.tar feishu-deepseek-bot:1.0
+# 把 tar 传到 NAS 后
+docker load -i feishu-bot.tar
+```
+
+然后 `docker-compose.yml` 里删掉 `build: .`，只留 `image: feishu-deepseek-bot:1.0`。
+
+### 6. 和管家版的差异
+
+- 联网搜索在 NAS 上没有插件界面，直接在 `.env` 里写 `WEB_SEARCH=on`、`WEB_SEARCH_MAX_RESULTS=3`
+- 云文档清单要改 `docs.json`（挂载进容器的是只读副本，改宿主机的文件后 `docker compose restart`）
+- 没有「退出时停止机器人」这类概念——容器本身就是进程边界，`docker stop` 即停
+
+---
+
 ## 四、配置项说明（.env）
 
 | 变量 | 说明 |

@@ -892,6 +892,9 @@ FeishuBotManager.exe --uninstall --yes  # 静默，注册表 QuietUninstallStrin
 
 ## 12. 已知限制与维护约定
 
+> **部署形态**：管家本体是 Windows 桌面程序（WebView2 / 托盘 / 注册表 / `taskkill`），**只能在 Windows 上跑**；被托管的机器人是纯 Node 长连接程序，可以单独放进 Docker 跑在 NAS / Linux 上 7×24（镜像与 `docker compose` 见 `bot/README.md` 的「三之二、放到 NAS / Docker 里跑」）。两者只通过「机器人目录」约定耦合，所以拆开部署不冲突——NAS 上那台就不需要管家，启停交给容器重启策略。
+
+
 **限制**
 
 - 仅 Windows：依赖 Win32 原生窗口移动、注册表自启、`taskkill`、`clip`；

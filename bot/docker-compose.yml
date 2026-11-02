@@ -1,0 +1,24 @@
+services:
+  bot:
+    build: .
+    image: feishu-deepseek-bot:1.0
+    container_name: feishu-bot
+    restart: unless-stopped
+    # 所有配置都走 .env（不加 -v 挂载 .env，避免容器内文件权限问题）
+    env_file: .env
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      # 云文档白名单；文件不存在时 Docker 会建成目录导致启动报错，先放好
+      - ./docs.json:/app/docs.json:ro
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "node index.js"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
