@@ -4,16 +4,18 @@
 #         --env-file .env -v "$PWD/docs.json:/app/docs.json:ro" feishu-deepseek-bot:1.0
 FROM node:22-alpine
 
-# 让 TZ=Asia/Shanghai 真正生效（alpine 默认没有 tzdata）
-RUN apk add --no-cache tzdata
+# 国内网络友好：apk / npm 都走国内镜像；镜像不可达时退回默认源，不阻断构建
+RUN sed -i 's#dl-cdn.alpinelinux.org#mirrors.aliyun.com#' /etc/apk/repositories \
+ && (apk add --no-cache tzdata || true)
 
 WORKDIR /app
 ENV NODE_ENV=production \
-    TZ=Asia/Shanghai
+    TZ=Asia/Shanghai \
+    npm_config_registry=https://registry.npmmirror.com
 
 # 先装依赖，代码改动时不重复 npm ci
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --registry=https://registry.npmmirror.com && npm cache clean --force
 
 COPY . .
 
