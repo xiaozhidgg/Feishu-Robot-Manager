@@ -572,6 +572,12 @@ html[data-anim="none"] .toast { animation: none; }
 .doc-meta { font-size: 10px; color: var(--text-3); font-family: var(--mono); padding-left: 5px; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .doc-tag { font-size: 10px; padding: 2px 7px; border-radius: 5px; background: var(--panel-3); color: var(--text-3); flex: 0 0 auto; }
 .doc-tag.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+.doc-open {
+  flex: 0 0 auto; height: 24px; padding: 0 10px; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-3); font-size: 11px; line-height: 22px; cursor: pointer;
+}
+.doc-open:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
 .doc-del { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 6px; color: var(--text-3); font-size: 13px; line-height: 1; }
 .doc-del:hover { color: var(--err); background: color-mix(in srgb, var(--err) 14%, transparent); }
 

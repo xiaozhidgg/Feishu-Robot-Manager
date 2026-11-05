@@ -14,6 +14,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from .config import app_dir
 from .logs import LogStore
 
 CREATE_NO_WINDOW = 0x08000000
@@ -62,11 +63,50 @@ class BotProcess:
         return Path(raw) if raw else None
 
     def resolve_node(self) -> str:
+        """找到真正的 node.exe。
+
+        绿色版 Node 常常只解压到某个目录、没写进 PATH；从这里启动 GUI 时
+        继承不到用户在终端里配的 PATH，于是 ``which("node")`` 落空，界面报
+        「找不到 Node」。所以再按几个常见位置兜底找一圈。
+        """
         node = (self.config.get("bot.node") or "node").strip()
         if os.path.isabs(node) and Path(node).exists():
             return node
         found = shutil.which(node)
-        return found or node
+        if found:
+            return found
+        for cand in self._node_candidates():
+            try:
+                if cand.is_file():
+                    return str(cand)
+            except OSError:
+                continue
+        return node
+
+    def _node_candidates(self):
+        env = os.environ
+        roots = []
+        pf = env.get("ProgramFiles")
+        if pf:
+            roots.append(Path(pf) / "nodejs" / "node.exe")
+        pf86 = env.get("ProgramFiles(x86)")
+        if pf86:
+            roots.append(Path(pf86) / "nodejs" / "node.exe")
+        local = env.get("LOCALAPPDATA")
+        if local:
+            roots.append(Path(local) / "Programs" / "nodejs" / "node.exe")
+            roots.append(Path(local) / "nvs" / "node.exe")
+        user = env.get("USERPROFILE")
+        if user:
+            roots.append(Path(user) / "scoop" / "shims" / "node.exe")
+        roots += [Path("D:/software/node.exe"), Path("C:/nodejs/node.exe"),
+                  Path("D:/Program Files/nodejs/node.exe")]
+        bot_dir = self.bot_dir
+        if bot_dir:
+            roots.append(bot_dir.parent / "node.exe")
+            roots.append(bot_dir / "node.exe")
+        roots.append(app_dir() / "node.exe")
+        return roots
 
     # ------------------------------------------------------------------ 检查
     def preflight(self) -> Dict[str, Any]:

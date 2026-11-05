@@ -73,6 +73,7 @@ const MOCK = {
   export_logs: () => ({ ok: true, path: "C:\\logs.txt" }),
   clear_logs: () => true,
   open_path: () => true,
+  open_url: () => true,
   open_feishu_console: () => ({ ok: true, exact: true, url: "https://open.feishu.cn/app/cli_demo/baseinfo" }),
   open_plugins_dir: () => true,
   pick_folder: () => null,
@@ -347,11 +348,12 @@ function renderDocList(docs) {
   }
   box.innerHTML = docs
     .map(
-      (d) => `<div class="doc-row" data-index="${d.index}">
+      (d) => `<div class="doc-row" data-index="${d.index}" data-url="${esc(d.url || "")}">
         <div class="doc-main">
           <input class="doc-name" value="${esc(d.name)}" />
           <div class="doc-meta">${esc(d.docType)} · ${esc(d.token || d.url)}</div>
         </div>
+        ${d.url ? `<button class="doc-open" title="在飞书里打开这篇文档">编辑</button>` : ""}
         <span class="doc-tag ${d.writable ? "ok" : ""}">${d.writable ? "可读写" : "只读"}</span>
         <label class="switch sm" title="可读写 / 只读"><input type="checkbox" class="doc-w" ${d.writable ? "checked" : ""}/><span></span></label>
         <button class="doc-del" title="从清单移除">✕</button>
@@ -373,6 +375,13 @@ function renderDocList(docs) {
       await bridge.call("set_doc_writable", idx, e.target.checked);
       toast(e.target.checked ? "已设为可读写" : "已设为只读");
       await loadDocs();
+    });
+
+    $(".doc-open", row)?.addEventListener("click", async () => {
+      const url = row.dataset.url;
+      if (!url) return;
+      const ok = await bridge.call("open_url", url);
+      if (!ok) toast("没能打开浏览器，检查一下默认浏览器设置", "err");
     });
 
     $(".doc-del", row).addEventListener("click", async () => {

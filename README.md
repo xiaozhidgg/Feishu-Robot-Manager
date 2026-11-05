@@ -922,7 +922,10 @@ FeishuBotManager.exe --uninstall --yes  # 静默，注册表 QuietUninstallStrin
 |---|---|---|
 | 双击后没反应 | 已有实例在跑（单实例互斥） | 看右下角托盘 |
 | 「启动」被拦下，体检报目录不存在 | `bot.dir` 未配置或被移动 | 设置 → 运行环境 重新选目录 |
-| 体检报「找不到 Node」 | `bot.node` 不在 PATH | 填 node 绝对路径，或装 Node 后重启管家 |
+| 体检报「找不到 Node」 | `bot.node` 不在 PATH | 现在会自动在常见位置兜底找（`Program Files
+odejs`、`%LOCALAPPDATA%\Programs
+odejs`、`scoop\shims`、`D:\software
+ode.exe`、机器人目录上一级、安装目录本身）；还找不到就填 node 绝对路径 |
 | 机器人起来后很快退出 | 机器人目录缺 `.env` 或凭证失效 | 体检里是 `warn`，按提示补凭证；日志页看退出码与 stderr |
 | 关窗后进程还在 | `window.closeAction` 默认为 `tray`（收托盘） | 设置 → 关闭窗口时 改成「退出应用」，或用托盘菜单退出 |
 | 界面白屏 | WebView2 运行时缺失，或 `web\index.html` 没打进去 | 安装 Edge WebView2 Runtime；检查 `--add-data` |
