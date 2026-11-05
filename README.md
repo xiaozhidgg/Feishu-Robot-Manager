@@ -10,7 +10,7 @@
 
 | 能力 | 实现方式 |
 |---|---|
-| 单文件分发 | PyInstaller `--onefile`，界面资源打进包内，约 15 MB（安装包约 31 MB） |
+| 单文件分发 | PyInstaller `--onefile`，界面资源打进包内，约 15 MB（安装包约 34 MB） |
 | 现代化界面 | pywebview + Edge WebView2，无边框窗口，纯 DOM 无前端框架 |
 | 机器人托管 | `subprocess` 拉起 `node index.js`，stdout/stderr 实时汇入日志 |
 | 配置编辑 | 图形化编辑机器人 `.env`（保留注释）与 `docs.json`（带链接解析） |
@@ -643,6 +643,34 @@ plugin.js: ctx.pluginCall("hello", {...})
 
 限制：插件只做「推清单」。NAS 上的 `.env`（密钥）、容器与镜像仍由你在 UGOS 里管；共享目录没通（SMB 445/139 不通）时插件只能报错，不会替你开共享。
 
+#### 让「重启机器人」按钮真正可用（一次性）
+
+NAS 上普通用户不在 `docker` 组（`/var/run/docker.sock` 是 `root:docker 0660`），所以要走一条**受限免密 sudo**，而不是把账号加进 docker 组（那等于给 root）。
+
+1. NAS 打开 SSH（UGOS → 控制面板 → 终端机/SSH）。
+2. 本机生成密钥并放到固定位置（不要带空格和中文路径，`ssh.exe` 会嫌）：
+
+   ```powershell
+   ssh-keygen -t ed25519 -N "" -C "FBM-HOME" -f $env:USERPROFILE\.ssh\fbm_nas
+   ```
+
+   把 `fbm_nas.pub` 的内容追加到 NAS 上该用户的 `~/.ssh/authorized_keys`（`chmod 600`）。
+3. 在 NAS 上写 `/etc/sudoers.d/fbm-ci`（`visudo -cf` 校验过再用），只放这几条：
+
+   ```
+   Ming1122 ALL=(root) NOPASSWD: /usr/bin/docker restart feishu-bot, /usr/bin/docker start feishu-bot, /usr/bin/docker stop feishu-bot, /usr/bin/docker ps, /usr/bin/docker ps *, /usr/bin/docker logs, /usr/bin/docker logs *
+   ```
+
+   > sudoers 里「不写参数」并不等于「任意参数」——要带参数就得显式写 `*`，否则会报 `sudo: a password is required`。
+
+4. 插件里填（`-o BatchMode=yes` 保证不会弹密码）：
+
+   ```
+   ssh -i C:\Users\<你>\.ssh\fbm_nas -o BatchMode=yes Ming1122@<NAS IP> "sudo -n docker restart feishu-bot"
+   ```
+
+5. 取消勾选「上传成功后自动执行」就只上传不动容器；容器名以 `docker ps` 为准（本项目 compose 里是 `feishu-bot`）。
+
 ## 8. 运行时文件与配置格式
 
 ### 8.1 文件清单
@@ -799,7 +827,7 @@ plugin.js: ctx.pluginCall("hello", {...})
 | 安装步骤（进度） | 4% 准备目录 → 18% 复制主程序 → 52% 复制插件 → 62% 复制文档 → 66% 复制机器人 → 70% 写卸载入口 → 72% 清理旧卸载器 → 78% 注册表 → 84% 快捷方式 → 100% |
 | 插件覆盖策略 | 目标 `plugins\` **已存在则跳过**，避免冲掉用户自装插件 |
 | 机器人副本 | `bot\`（内置一份机器人：`index.js` / `docs.js` / `node_modules` 等，**不含** `.env` 与 `docs.json`）；目标 `bot\` 已存在则跳过，不动用户改过的代码与 `.env` |
-| 安装包体积 | 约 31 MB（内置机器人压缩后约 4 MB） |
+| 安装包体积 | 约 34 MB（含内置机器人源码与 node_modules，压缩后约 4 MB） |
 | 桌面快捷方式 | `飞书机器人管家.lnk`（PowerShell + WScript.Shell 创建）。桌面位置读注册表 `Explorer\Shell Folders\Desktop`，所以桌面被重定向到 `D:\Desktop` 或 OneDrive 也能落到你看得见的地方；卸载时按同一路径清理 |
 | 开始菜单 | `飞书机器人管家.lnk` 与 `卸载 飞书机器人管家.lnk`（后者带 `--uninstall` 参数） |
 | 安装目录内 | `卸载.bat`（95 字节，`start "" "%~dp0FeishuBotManager.exe" --uninstall`）——给习惯「在文件夹里找卸载」的人留的入口，整个目录拷走也不失效 |
@@ -916,7 +944,7 @@ FeishuBotManager.exe --uninstall --yes  # 静默，注册表 QuietUninstallStrin
 **限制**
 
 - 仅 Windows：依赖 Win32 原生窗口移动、注册表自启、`taskkill`、`clip`；
-- 单文件 exe 约 15 MB（安装包约 31 MB，含内置机器人），每次启动需解压到临时目录，首次启动 1–2 s；
+- 单文件 exe 约 15 MB（安装包约 34 MB，含内置机器人），每次启动需解压到临时目录，首次启动 1–2 s；
 - 内置的 `bot\` 是打包那一刻的快照：机器人代码更新后需要重打安装包，或把机器人目录指回你的开发目录（设置 → 运行环境 → 选择）；
 - 卸载必须走 `FeishuBotManager.exe --uninstall`；手工只删安装目录会留下注册表卸载项与快捷方式；
 - 无边框窗口在部分屏幕缩放/多屏组合下表现不完美，已用 `Screen.WorkingArea` 兜底，仍可切回系统标题栏；

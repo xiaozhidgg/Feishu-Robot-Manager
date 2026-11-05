@@ -55,7 +55,7 @@ FBM.registerPlugin({
 
     const $n = (id) => root.querySelector("#" + id);
     $n("nsDir").placeholder = "\\\\jiuyeyunpan\\docker\\FeishuBot\\data";
-    $n("nsRestart").placeholder = 'ssh root@192.168.1.2 "docker restart feishu-bot"';
+    $n("nsRestart").placeholder = 'ssh -i C:\\Users\\<你>\\.ssh\\fbm_nas Ming1122@192.168.1.2 "sudo -n docker restart feishu-bot"';
 
     const out = $n("nsOut");
     const state = $n("nsState");

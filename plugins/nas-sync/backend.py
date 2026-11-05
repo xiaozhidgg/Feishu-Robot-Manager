@@ -173,9 +173,10 @@ def _restart(config, log) -> dict:
     except Exception as exc:
         return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
 
+    noise = ("Permanently added", "post-quantum", "store now", "openssh.com/pq", "may need to be upgraded")
     out = "\n".join(
         line for line in ((proc.stdout or "") + (proc.stderr or "")).splitlines()
-        if "Permanently added" not in line
+        if not any(k in line for k in noise) and not line.strip().startswith("**")
     ).strip()
     ok = proc.returncode == 0
     log(f"NAS 同步：重启容器 {'成功' if ok else '失败'}（{proc.returncode}）", "info" if ok else "error")

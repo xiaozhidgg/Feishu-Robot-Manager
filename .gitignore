@@ -42,3 +42,6 @@ bot/docs.json
 bot/logs/
 bot/.cache/
 !bot/.env.example
+
+# 本机到 NAS 的专用密钥（不要入库）
+.ssh/
