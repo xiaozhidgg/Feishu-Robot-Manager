@@ -1,0 +1,11 @@
+{
+  "id": "nas-sync",
+  "name": "NAS 同步",
+  "version": "1.0.0",
+  "description": "把文档清单 docs.json 同步到 NAS 上的机器人，并可一键重启容器。",
+  "author": "飞书机器人管家",
+  "tab": { "title": "NAS 同步" },
+  "ui": "plugin.js",
+  "css": "plugin.css",
+  "backend": "backend.py"
+}

@@ -1,0 +1,46 @@
+/* NAS 同步插件样式：只补管家没有的那几个布局类 */
+.ns-state.ok { color: var(--ok); }
+.ns-state.warn { color: var(--warn); }
+.ns-state.bad { color: var(--err); }
+
+.ns-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ns-col {
+  background: var(--panel-2, rgba(255, 255, 255, .03));
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  min-width: 0;
+}
+.ns-k {
+  font-size: 10.5px;
+  letter-spacing: .5px;
+  color: var(--text-3);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.ns-v { font-size: 12px; color: var(--text); line-height: 1.6; }
+.ns-v b { color: var(--accent); font-size: 14px; font-weight: 600; }
+.ns-path {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+  margin-top: 4px;
+  word-break: break-all;
+}
+.ns-warn { color: var(--warn); font-size: 12px; }
+
+.ns-check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.ns-check input { accent-color: var(--accent); }
