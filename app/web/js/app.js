@@ -351,9 +351,10 @@ function renderDocList(docs) {
       (d) => `<div class="doc-row" data-index="${d.index}" data-url="${esc(d.url || "")}">
         <div class="doc-main">
           <input class="doc-name" value="${esc(d.name)}" />
-          <div class="doc-meta">${esc(d.docType)} · ${esc(d.token || d.url)}</div>
+          <div class="doc-meta">${esc(d.docType)} · ${esc(d.token || d.url)}${
+            d.url ? ` <button class="doc-link" title="改这一条的文档链接">改链接</button>` : ""
+          }</div>
         </div>
-        ${d.url ? `<button class="doc-open" title="在飞书里打开这篇文档">编辑</button>` : ""}
         <span class="doc-tag ${d.writable ? "ok" : ""}">${d.writable ? "可读写" : "只读"}</span>
         <label class="switch sm" title="可读写 / 只读"><input type="checkbox" class="doc-w" ${d.writable ? "checked" : ""}/><span></span></label>
         <button class="doc-del" title="从清单移除">✕</button>
@@ -377,11 +378,30 @@ function renderDocList(docs) {
       await loadDocs();
     });
 
-    $(".doc-open", row)?.addEventListener("click", async () => {
-      const url = row.dataset.url;
-      if (!url) return;
-      const ok = await bridge.call("open_url", url);
-      if (!ok) toast("没能打开浏览器，检查一下默认浏览器设置", "err");
+    $(".doc-link", row)?.addEventListener("click", () => {
+      const meta = $(".doc-meta", row);
+      meta.innerHTML = `<input class="doc-url" value="${esc(row.dataset.url || "")}"
+          placeholder="https://…feishu.cn/docs/… 或 /wiki/…" />
+        <button class="doc-save">保存</button>
+        <button class="doc-cancel">取消</button>`;
+      const input = $(".doc-url", meta);
+      input.focus();
+      input.select();
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") $(".doc-save", meta).click();
+        if (e.key === "Escape") $(".doc-cancel", meta).click();
+      });
+      $(".doc-save", meta).addEventListener("click", async () => {
+        const r = await bridge.call("set_doc_url", idx, input.value.trim());
+        if (r && r.ok) {
+          toast("链接已更新");
+          await loadDocs();
+        } else {
+          toast((r && r.error) || "保存失败", "err");
+          input.focus();
+        }
+      });
+      $(".doc-cancel", meta).addEventListener("click", () => loadDocs());
     });
 
     $(".doc-del", row).addEventListener("click", async () => {

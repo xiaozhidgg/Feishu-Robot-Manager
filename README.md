@@ -347,6 +347,7 @@ const r = await bridge.call("get_logs", 0);   // → window.pywebview.api.get_lo
 | `add_doc(url, name="", writable=True)` | | 同 `list_docs` + `{added, hint, supported}` | 失败 → `{ok:false, error}`；`hint` 提示链接被识别成什么类型 |
 | `remove_doc(index)` | `index:int` | 同 `list_docs` | 越界 → `error="这一项不存在，刷新一下列表"` |
 | `rename_doc(index, name)` | | 同 `list_docs` | 名称去空白，不能为空 |
+| `set_doc_url(index, url)` | | 同 `list_docs` | 换掉某一项的链接：重新解析 token / 类型，只动这一条；认不出的链接、与其它条重复的 token 都会被拒（`{ok:false,error}`） |
 | `set_doc_writable(index, writable)` | | 同 `list_docs` | 决定机器人能否写回 |
 | `get_docs()` | — | `{ok, path, raw}` | 原始 JSON 文本 |
 | `save_docs(text)` | `text:string` | `{ok}` | 校验 JSON 合法性；失败 `error="JSON 格式不对：…"` |

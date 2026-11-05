@@ -360,6 +360,45 @@ class Api:
         result.update({"added": entry, "hint": parsed["hint"], "supported": parsed["supported"]})
         return result
 
+    def set_doc_url(self, index: int, url: str) -> Dict[str, Any]:
+        """改某一项文档的链接；token 和类型跟着重新解析。
+
+        只改这一条，别的字段（名称、是否可读写、备注）保持不动。
+        """
+        parsed = self._parse_doc_url(url)
+        if not parsed:
+            return {
+                "ok": False,
+                "error": "认不出这个链接，请粘贴完整地址（含 /docx/ 或 /wiki/ 那一段）",
+            }
+
+        data = self._load_docs_data()
+        try:
+            entry = data["docs"][int(index)]
+        except Exception:
+            return {"ok": False, "error": "这一项不存在，刷新一下列表"}
+        if not isinstance(entry, dict):
+            return {"ok": False, "error": "这一项不存在，刷新一下列表"}
+
+        for i, d in enumerate(data["docs"]):
+            if i == int(index) or not isinstance(d, dict):
+                continue
+            exist = self._parse_doc_url(d.get("url") or d.get("token") or "")
+            if exist and exist["token"] == parsed["token"]:
+                return {"ok": False, "error": "清单里已经有这篇文档了"}
+
+        entry["url"] = parsed["url"]
+        entry["type"] = "wiki" if parsed["type"] == "wiki" else "docx"
+        try:
+            self._save_docs_data(data)
+        except Exception as exc:
+            return {"ok": False, "error": f"写入 docs.json 失败：{exc}"}
+
+        self._logs.add(f"更新文档链接：{entry.get('name') or parsed['token']}", "manager")
+        result = self.list_docs()
+        result.update({"hint": parsed["hint"], "token": parsed["token"]})
+        return result
+
     def remove_doc(self, index: int) -> Dict[str, Any]:
         data = self._load_docs_data()
         try:

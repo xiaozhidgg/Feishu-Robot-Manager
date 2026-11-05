@@ -569,15 +569,32 @@ html[data-anim="none"] .toast { animation: none; }
 }
 .doc-row .doc-name:hover { border-color: var(--border); }
 .doc-row .doc-name:focus { background: var(--panel); border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: none; }
-.doc-meta { font-size: 10px; color: var(--text-3); font-family: var(--mono); padding-left: 5px; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-meta { font-size: 10px; color: var(--text-3); font-family: var(--mono); padding-left: 5px; margin-top: 1px;
+  display: flex; align-items: center; gap: 6px; min-height: 18px; }
+.doc-meta > .doc-link { flex: 0 0 auto; }
 .doc-tag { font-size: 10px; padding: 2px 7px; border-radius: 5px; background: var(--panel-3); color: var(--text-3); flex: 0 0 auto; }
 .doc-tag.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
-.doc-open {
-  flex: 0 0 auto; height: 24px; padding: 0 10px; border-radius: 6px;
-  border: 1px solid var(--border); background: transparent;
-  color: var(--text-3); font-size: 11px; line-height: 22px; cursor: pointer;
+.doc-link {
+  border: 0; background: transparent; padding: 0 2px; cursor: pointer;
+  font: inherit; font-size: 10px; color: var(--text-3);
+  text-decoration: underline; text-underline-offset: 2px;
 }
-.doc-open:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.doc-link:hover { color: var(--accent); }
+.doc-meta .doc-url {
+  height: 24px; padding: 0 8px; min-width: 300px;
+  font: 11px/22px var(--mono); color: var(--text);
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+}
+.doc-meta .doc-url:focus { border-color: color-mix(in srgb, var(--accent) 55%, transparent); outline: none; }
+.doc-meta .doc-url { flex: 1 1 auto; min-width: 240px; }
+.doc-save, .doc-cancel {
+  flex: 0 0 auto; white-space: nowrap;
+  height: 24px; padding: 0 10px; border-radius: 6px; font-size: 11px; line-height: 22px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--text-3); font-family: inherit;
+}
+.doc-save { background: var(--accent); border-color: transparent; color: #fff; }
+.doc-save:hover { background: color-mix(in srgb, var(--accent) 86%, #fff); }
+.doc-cancel:hover { color: var(--text); border-color: var(--border-strong); }
 .doc-del { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 6px; color: var(--text-3); font-size: 13px; line-height: 1; }
 .doc-del:hover { color: var(--err); background: color-mix(in srgb, var(--err) 14%, transparent); }
 
