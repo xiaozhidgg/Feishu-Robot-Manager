@@ -60,6 +60,11 @@ FBM.registerPlugin({
     const out = $n("nsOut");
     const state = $n("nsState");
     const buttons = ["nsSave", "nsTest", "nsUpload", "nsRestartBtn"].map($n);
+    // 后端返回 {ok, data}；把 data 拆出来用
+    const call = async (method, payload) => {
+      const r = await ctx.pluginCall(method, payload);
+      return r && r.data && typeof r.data === "object" ? r.data : r;
+    };
 
     const say = (text) => { out.textContent = text; out.scrollTop = out.scrollHeight; };
     const busy = (on) => buttons.forEach((b) => { b.disabled = !!on; });
@@ -96,7 +101,7 @@ FBM.registerPlugin({
 
     async function reload() {
       try {
-        paint(await ctx.pluginCall("status"));
+        paint(await call("status"));
       } catch (err) {
         state.textContent = "检测失败";
         state.className = "hint ns-state bad";
@@ -125,7 +130,7 @@ FBM.registerPlugin({
 
     $n("nsSave").addEventListener("click", () =>
       run($n("nsSave"), "正在保存", async () => {
-        const res = await ctx.pluginCall("save", {
+        const res = await call("save", {
           dir: $n("nsDir").value.trim(),
           restart: $n("nsRestart").value.trim(),
           autoRestart: $n("nsAuto").checked,
@@ -136,7 +141,7 @@ FBM.registerPlugin({
 
     $n("nsUpload").addEventListener("click", () =>
       run($n("nsUpload"), "正在上传", async () => {
-        const res = await ctx.pluginCall("upload");
+        const res = await call("upload");
         if (!res || !res.ok) {
           say((res && res.error) || "上传失败");
           ctx.toast("上传失败");
@@ -155,7 +160,7 @@ FBM.registerPlugin({
 
     $n("nsRestartBtn").addEventListener("click", () =>
       run($n("nsRestartBtn"), "正在执行重启命令", async () => {
-        const res = await ctx.pluginCall("restart");
+        const res = await call("restart");
         if (res && res.ok) say("重启命令已执行：\n" + (res.output || "（无输出）"));
         else say((res && res.error) || "重启失败");
         await reload();
